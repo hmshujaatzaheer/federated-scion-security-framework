@@ -1,0 +1,10 @@
+```
+__pycache__/
+*.pyc
+venv/
+data/datasets/*/
+*.csv
+logs/
+*.log
+.DS_Store
+checkpoints/
