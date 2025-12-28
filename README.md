@@ -239,4 +239,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Repository maintained by H M Shujaat Zaheer**  
-**Applying to: MIT, Stanford, ETH Zürich, Cambridge, Oxford, Imperial College London**
