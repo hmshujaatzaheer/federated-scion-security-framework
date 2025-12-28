@@ -5,8 +5,6 @@
 [![Research Status](https://img.shields.io/badge/status-in%20progress-orange.svg)]()
 
 > **PhD Research Project**  
-> Network Security Group, ETH Zürich  
-> Spring 2026  
 > Contact: shujabis@gmail.com
 
 ---
@@ -239,4 +237,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Repository maintained by H M Shujaat Zaheer**  
-**Applying to: MIT, Stanford, ETH Zürich, Cambridge, Oxford, Imperial College London**
