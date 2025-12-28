@@ -5,8 +5,6 @@
 [![Research Status](https://img.shields.io/badge/status-in%20progress-orange.svg)]()
 
 > **PhD Research Project**  
-> Network Security Group, ETH Zürich  
-> Spring 2026  
 > Contact: shujabis@gmail.com
 
 ---
