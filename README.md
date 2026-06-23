@@ -219,8 +219,7 @@ MIT — see [LICENSE](LICENSE).
 This is independent research. It builds on the publicly published work of the
 Network Security Group at ETH Zürich (SCION, Hummingbird, the formally verified
 router, and the 2026 results listed in `docs/CITATIONS.md`) and on the
-open-source SCION, Isabelle/HOL, and Circom ecosystems. It does not imply any
-affiliation with or endorsement by that group.
+open-source SCION, Isabelle/HOL, and Circom ecosystems.
 
 ---
 
