@@ -1,8 +1,7 @@
-﻿"""
+"""
 Differential Privacy for Federated Learning
 
-Addresses RQ1.3: Privacy-preserving federated learning
-Implements (ε, δ)-differential privacy via Gaussian noise
+Privacy-preserving federated learning; implements (eps, delta)-DP via Gaussian noise.
 
 Reference:
     Abadi et al. "Deep Learning with Differential Privacy" (CCS 2016)
@@ -38,7 +37,7 @@ class DifferentialPrivacy:
         # Compute noise scale using Gaussian mechanism
         self.noise_scale = self._compute_noise_scale()
         
-        logger.info(f"DP initialized: (ε={epsilon}, δ={delta}), noise_scale={self.noise_scale:.4f}")
+        logger.info(f"DP initialized: (eps={epsilon}, delta={delta}), noise_scale={self.noise_scale:.4f}")
     
     def _compute_noise_scale(self) -> float:
         """
@@ -98,7 +97,6 @@ class PrivateFedAvgClient:
     Federated Averaging client with differential privacy
     
     Combines FedAvg with DP to protect client data privacy
-    Addresses RQ1.3 and RQ1.4 (privacy-performance trade-off)
     """
     
     def __init__(self, client_id: int, epsilon: float = 1.0, delta: float = 1e-5):
@@ -134,7 +132,7 @@ class PrivateFedAvgClient:
             for key in self.model_weights.keys():
                 self.model_weights[key] -= learning_rate * noisy_gradients[key]
         
-        logger.info(f"Client {self.client_id}: Private training complete (ε={self.dp.epsilon})")
+        logger.info(f"Client {self.client_id}: Private training complete (eps={self.dp.epsilon})")
         
         return self.model_weights
     
@@ -167,6 +165,6 @@ if __name__ == "__main__":
         
         noise_magnitude = np.linalg.norm(noisy_grad - grad)
         
-        print(f"ε={eps:.1f}: Noise magnitude = {noise_magnitude:.4f}")
-    
-    print("\nConclusion: Lower ε → More privacy → More noise → Lower utility")
+        print(f"eps={eps:.1f}: Noise magnitude = {noise_magnitude:.4f}")
+
+    print("\nConclusion: Lower eps -> More privacy -> More noise -> Lower utility")

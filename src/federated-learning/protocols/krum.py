@@ -1,8 +1,7 @@
 ﻿"""
 Krum: Byzantine-Robust Federated Aggregation
 
-Addresses RQ1.2: Byzantine robustness in federated learning
-Resists up to f < n/2 - 1 malicious clients
+Byzantine robustness in federated learning; resists up to f < n/2 - 1 malicious clients.
 
 Reference:
     Blanchard et al. "Machine Learning with Adversaries: 

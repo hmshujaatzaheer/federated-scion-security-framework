@@ -1,13 +1,19 @@
-﻿"""
+"""
 SCION-Specific Feature Engineering for DDoD Detection
 
-Addresses RQ1.1: Exploiting path-aware properties for anomaly detection
+Exploiting path-aware properties for anomaly detection.
 
 SCION provides unique features not available in traditional networks:
 - Path diversity (multiple paths per AS pair)
 - Explicit path selection
 - Hop field authentication
 - Segment-based routing
+- Fractional-fair-share isolation: each flow has a provable entitlement, so the
+  gap between entitlement and realized service is a directly observable,
+  path-aware signal (after Wyss, Hu, Lenders, Meier & Perrig, "Lightweight
+  Internet Bandwidth Allocation and Isolation with Fractional Fair Shares,"
+  NDSS 2026; see docs/CITATIONS.md). A strategic work-asymmetry adversary
+  (Xu et al., S&P 2026) tries to distort exactly this signal.
 """
 
 import numpy as np
@@ -25,13 +31,14 @@ class SCIONPacket:
     segment_types: List[str]  # ['core', 'up', 'down']
     timestamp: float
     packet_size: int
-    
+    fair_share_entitlement: float = 0.0  # provable fair share for this flow (Gbps)
+    realized_service: float = 0.0        # bandwidth actually delivered (Gbps)
+
 
 class SCIONFeatureExtractor:
     """
     Extract SCION-specific features for DDoD detection
     
-    Addresses RQ1.1: How to exploit path-aware properties?
     """
     
     def __init__(self):
@@ -83,7 +90,9 @@ class SCIONFeatureExtractor:
         Traffic pattern features:
         14. Per-path traffic rate
         15. Path switching anomaly score
-        16. Bandwidth reservation utilization
+        16. Fractional-fair-share deviation (entitlement - realized service);
+            a strong path-aware isolation signal under SCION's 2026 allocation
+            substrate, and the quantity a work-asymmetry adversary distorts
         17. Path quality metrics (latency, loss)
         
         DDoD-specific features:
@@ -125,7 +134,16 @@ class SCIONFeatureExtractor:
         
         # Feature 14-17: Traffic patterns
         features[13] = packet.packet_size / 1500.0  # Normalized by MTU
-        
+
+        # Feature 16: Fractional-fair-share deviation (entitlement - realized).
+        # Positive => flow is being starved relative to its provable share;
+        # large magnitude is a path-aware isolation anomaly (Wyss et al. 2026).
+        if packet.fair_share_entitlement > 0:
+            features[15] = (
+                (packet.fair_share_entitlement - packet.realized_service)
+                / packet.fair_share_entitlement
+            )
+
         # Feature 18-20: DDoD-specific indicators
         # Entropy of traffic distribution across paths
         if len(self.path_history.get(as_pair, [])) > 1:
@@ -140,9 +158,10 @@ if __name__ == "__main__":
     
     # Simulate SCION packets
     packets = [
-        SCIONPacket(src_as=1, dst_as=10, path_id=1, hop_count=5, 
-                   segment_types=['up', 'core', 'down'], 
-                   timestamp=1.0, packet_size=1200),
+        SCIONPacket(src_as=1, dst_as=10, path_id=1, hop_count=5,
+                   segment_types=['up', 'core', 'down'],
+                   timestamp=1.0, packet_size=1200,
+                   fair_share_entitlement=10.0, realized_service=4.0),
         SCIONPacket(src_as=1, dst_as=10, path_id=2, hop_count=6, 
                    segment_types=['up', 'core', 'down'], 
                    timestamp=1.1, packet_size=1400),

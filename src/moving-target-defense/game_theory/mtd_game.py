@@ -1,14 +1,25 @@
-﻿"""
+"""
 Moving Target Defense Game Theory for SCION
 
-Addresses RQ3: Path-aware MTD with provable security properties
+Path-aware MTD with provable security properties.
 
 Game Model:
-- Players: Defender (network operator), Attacker (adversary)
+- Players: Defender (network operator), Attacker = the SAME unified strategic
+  adversary used to attack detection (RQ0.1), not a fresh, weaker model.
+  Conceptually after Da Dalt & Perrig, "Strategic Games and Zero-Shot Attacks
+  on Heavy-Hitter Network Flow Monitoring," NDSS 2026.
 - Strategies: Path switching, service replication, bandwidth reservation shuffling
 - Payoffs: Attack success probability vs defense cost
 
-Isabelle/HOL formal verification proves Nash equilibrium properties
+Beyond Nash equilibrium, we check that the defender's *reconfiguration loop* is
+stable (does not oscillate/diverge) -- a control-theoretic concern raised for
+competing control loops by Scherrer, Perrig & Schmid, "A Control-Theoretic
+Perspective on BBR/CUBIC Congestion-Control Competition," Performance
+Evaluation 2026. Stability matters because the loop sits on a bounded-latency
+cyber-physical path (Zhang et al., SCION frequency response, 2026).
+
+Isabelle/HOL formal verification proves Nash equilibrium and loop-stability
+properties (see src/formal-verification/isabelle). Full references: docs/CITATIONS.md
 """
 
 import numpy as np
@@ -31,7 +42,6 @@ class MTDGameTheory:
     Game-theoretic Moving Target Defense for SCION
     
     Models defender-attacker interaction as a two-player game
-    Addresses RQ3.2: Formal game-theoretic models
     """
     
     def __init__(self, num_paths: int, attack_cost: float = 10.0, 
@@ -114,12 +124,64 @@ class MTDGameTheory:
         
         return defender_strategy, attacker_strategy
 
+    def assess_loop_stability(self, iterations: int = 1000,
+                              tail: int = 100) -> Dict[str, float]:
+        """
+        Control-theoretic stability check for the reconfiguration loop (RQ3.2).
+
+        We run fictitious play while tracking the defender's *time-averaged*
+        (empirical) strategy -- the quantity that converges in zero-sum games --
+        and measure how much it still moves over the final ``tail`` iterations.
+        A damped loop settles (tail movement -> 0); a loop that keeps churning is
+        oscillatory and unsafe on a bounded-latency cyber-physical path, even if
+        a Nash point formally exists. Conceptually motivated by the competing-
+        control-loop analysis of Scherrer, Perrig & Schmid (Perf. Eval. 2026).
+
+        Returns the mean tail step size and a 'stable' flag (1.0 / 0.0) under a
+        small movement threshold.
+        """
+        defender = np.ones(self.num_paths) / self.num_paths
+        attacker = np.ones(self.num_paths) / self.num_paths
+        avg = defender.copy()          # time-averaged defender strategy
+        trajectory = []
+
+        for t in range(1, iterations + 1):
+            d_payoffs = np.array([
+                self.compute_defender_payoff(np.eye(self.num_paths)[i], attacker)
+                for i in range(self.num_paths)
+            ])
+            best_d = int(np.argmax(d_payoffs))
+            defender = np.zeros(self.num_paths)
+            defender[best_d] = 1.0
+
+            a_payoffs = np.array([
+                self.compute_attacker_payoff(avg, np.eye(self.num_paths)[i])
+                for i in range(self.num_paths)
+            ])
+            best_a = int(np.argmax(a_payoffs))
+            attacker = 0.9 * attacker
+            attacker[best_a] += 0.1
+            attacker /= attacker.sum()
+
+            # Update the running average (the convergent iterate) and record its
+            # step size, which damps as 1/t for a settling loop.
+            prev_avg = avg.copy()
+            avg = avg + (defender - avg) / (t + 1.0)
+            trajectory.append(float(np.linalg.norm(avg - prev_avg)))
+
+        tail_movement = float(np.mean(trajectory[-tail:]))
+        threshold = 1e-3
+        return {
+            "tail_movement": tail_movement,
+            "threshold": threshold,
+            "stable": 1.0 if tail_movement < threshold else 0.0,
+        }
+
 
 class SCIONMTDStrategy:
     """
     SCION-specific MTD strategies leveraging path diversity
     
-    Addresses RQ3.1: Path-aware MTD reconfiguration
     """
     
     def __init__(self, available_paths: List[SCIONPath]):
@@ -196,6 +258,14 @@ if __name__ == "__main__":
     print(f"\nEquilibrium Payoffs:")
     print(f"Defender: {defender_payoff:.4f}")
     print(f"Attacker: {attacker_payoff:.4f}")
+
+    # Loop-stability check (RQ3.2): a Nash point is not enough on a
+    # bounded-latency cyber-physical path -- the loop must also settle.
+    stability = game.assess_loop_stability(iterations=1000)
+    print(f"\nReconfiguration Loop Stability:")
+    print(f"  tail movement: {stability['tail_movement']:.2e} "
+          f"(threshold {stability['threshold']:.0e})")
+    print(f"  stable: {bool(stability['stable'])}")
     
     # Create MTD strategy with sample SCION paths
     paths = [

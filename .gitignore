@@ -1,10 +1,17 @@
-```
+# Python
 __pycache__/
 *.pyc
 venv/
+.pytest_cache/
+
+# Data & artifacts
 data/datasets/*/
 *.csv
 logs/
 *.log
-.DS_Store
 checkpoints/
+
+# Tooling / editor / OS
+.idea/
+.vscode/
+.DS_Store

@@ -1,10 +1,16 @@
-﻿"""
+"""
 Federated Digital Twin Synchronization Protocol
 
-Addresses RQ4: Distributed digital twin with formally verified synchronization
+Distributed digital twin with formally verified synchronization.
 
 Consistency Model: Causal consistency using vector clocks
 Formal Verification: Isabelle/HOL proofs of eventual consistency
+
+Cyber-physical use (RQ4.4): when the twin drives control for workloads such as
+grid fast frequency response over SCION (Zhang, Kottmann, Peng, Perrig & Hug,
+arXiv:2601.06879, 2026; see docs/CITATIONS.md), synchronization and prediction
+must complete within a hard deadline, not just "eventually". `meets_control_deadline`
+makes that budget explicit.
 """
 
 import time
@@ -56,7 +62,6 @@ class FederatedDigitalTwin:
     Each SCION AS maintains a local twin component
     Synchronization ensures causal consistency across ASes
     
-    Addresses RQ4.1 and RQ4.2
     """
     
     def __init__(self, as_id: int):
@@ -82,7 +87,6 @@ class FederatedDigitalTwin:
         Synchronize with peer AS digital twin
         
         Maintains causal consistency via vector clocks
-        Addresses RQ4.2: Formally verified synchronization
         """
         # Update vector clock
         self.local_state.vector_clock.update(peer_state.vector_clock, self.as_id)
@@ -101,7 +105,6 @@ class FederatedDigitalTwin:
         """
         Federated anomaly detection using local + remote states
         
-        Addresses RQ4.3: Collaborative detection across AS twins
         """
         # Combine local and remote attack indicators
         all_indicators = self.local_state.attack_indicators.copy()
@@ -126,7 +129,6 @@ class FederatedDigitalTwin:
         """
         Predict bandwidth exhaustion using federated LSTM
         
-        Addresses RQ4.4: Predictive accuracy
         
         Returns:
             Predictions for next `horizon_minutes` minutes
@@ -154,8 +156,19 @@ class FederatedDigitalTwin:
         
         current_time = time.time()
         lags = [current_time - state.timestamp for state in self.remote_states.values()]
-        
+
         return max(lags)
+
+    def meets_control_deadline(self, deadline_s: float = 0.05) -> bool:
+        """
+        Hard-deadline check for cyber-physical use (RQ4.4).
+
+        Returns True iff the worst-case consistency lag is within ``deadline_s``,
+        the budget dictated by physical stability (e.g. grid frequency response
+        over SCION). Unlike `get_consistency_lag`, this frames sync latency as a
+        safety property rather than a best-effort target.
+        """
+        return self.get_consistency_lag() <= deadline_s
 
 
 # Example: Federated digital twin simulation

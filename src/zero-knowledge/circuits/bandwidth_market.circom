@@ -2,7 +2,7 @@
 
 /*
  * Bandwidth Asset Ownership Proof Circuit
- * Addresses RQ2.1: ZK-SNARKs integration with Hummingbird
+ * ZK-SNARK integration with Hummingbird bandwidth reservations
  *
  * Proves ownership of bandwidth reservation without revealing:
  * - Private key
@@ -53,10 +53,6 @@ template BandwidthOwnership() {
     rangeCheck.in[0] <== assetValue;
     rangeCheck.in[1] <== 1000;
     rangeCheck.out === 1;
-    
-    // Log output for debugging
-    log("Ownership proof verified");
-    log("Asset value:", assetValue);
 }
 
 /*
@@ -81,8 +77,6 @@ template PaymentValidity() {
     sufficientFunds.in[0] <== balance;
     sufficientFunds.in[1] <== price;
     sufficientFunds.out === 1;
-    
-    log("Payment validity verified");
 }
 
 /*
@@ -111,8 +105,6 @@ template SybilResistance() {
     leafHash <== leaf.out;
     
     // In full implementation: verify merkleProof proves leafHash is in tree with root
-    
-    log("Sybil resistance check passed");
 }
 
 /*
@@ -130,7 +122,6 @@ template BandwidthMarketTransaction() {
     component buyerSybil = SybilResistance();
     
     // All proofs must pass for transaction validity
-    log("Complete bandwidth market transaction verified");
 }
 
 // Export main component

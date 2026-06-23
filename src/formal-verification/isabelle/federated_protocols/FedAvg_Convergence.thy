@@ -5,7 +5,7 @@ begin
 
 (* 
  * Formal Verification of Federated Averaging Convergence
- * Addresses RQ1.2: Can we formally verify federated aggregation with Byzantine robustness?
+ * Byzantine-robust convergence of federated averaging.
  *
  * This theory proves convergence of FedAvg under Byzantine failures
  *)

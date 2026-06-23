@@ -1,239 +1,227 @@
-﻿# Formally Verified Federated Learning Framework for Privacy-Preserving Anomaly Detection in Path-Aware Networks
+# Formally Verified Federated Learning Framework for Privacy-Preserving Anomaly Detection in Path-Aware Networks
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Research Status](https://img.shields.io/badge/status-in%20progress-orange.svg)]()
 
-> **PhD Research Project**  
+> PhD research project — work in progress.
 > Contact: shujabis@gmail.com
 
 ---
 
-## 🎯 Research Vision
+## Research Vision
 
-This repository implements a novel framework that uniquely integrates five cutting-edge domains:
+This repository treats network defense as one closed control loop —
+`observe → learn → decide → reconfigure` — co-designed and co-verified against a
+single strategic adversary, rather than as a catalog of separate point defenses.
+It integrates five domains as the five stages of that loop:
 
-1. **Formal Verification** (Isabelle/HOL, Gobra) - Provable security guarantees
-2. **Federated Machine Learning** (Byzantine-robust, privacy-preserving) - Distributed intelligence
-3. **Zero-Knowledge Cryptography** (ZK-SNARKs) - Privacy-preserving bandwidth markets
-4. **Path-Aware Networking** (SCION) - Multipath routing security
-5. **Blockchain Systems** (Sui smart contracts) - Decentralized coordination
+1. Formal verification (Isabelle/HOL, Gobra) — provable security guarantees, end to end
+2. Federated machine learning (Byzantine-robust, privacy-preserving) — distributed detection
+3. Zero-knowledge cryptography (ZK-SNARKs) — privacy over the bandwidth-market substrate
+4. Path-aware networking (SCION) — multipath routing and isolation
+5. Blockchain systems (Sui / Signet-style notification) — verifiable coordination
 
-**Key Innovation:** No existing work combines formal verification of federated learning protocols with path-aware networking architectures.
+The motivating observation: detection and response are usually designed against
+different, implicit adversaries. A strategic attacker who is good at evading a
+flow monitor can therefore also steer the defense that monitor triggers. The aim
+here is to fix one adversary for the whole loop and discharge a single
+end-to-end correctness statement by refinement.
+
+This June 2026 revision is positioned against the SCION group's 2026 results;
+see [`docs/UPGRADE-2026.md`](docs/UPGRADE-2026.md) for what changed and
+[`docs/CITATIONS.md`](docs/CITATIONS.md) for the references it builds on.
 
 ---
 
-## 🔬 Research Questions
+## What's New in the June 2026 Revision
+
+| Area | Addition | Builds on |
+|------|----------|-----------|
+| Shared threat model | [`strategic_adversary.py`](src/federated-learning/adversary/strategic_adversary.py): one adversary (zero-shot evasion + work-asymmetry) reused by detection, MTD, and evaluation | Da Dalt & Perrig (NDSS'26); Xu et al. (S&P'26) |
+| Closed-loop controller | [`src/control-loop/`](src/control-loop/): runnable `observe→learn→decide→reconfigure` loop with a latency budget | Pereira et al. (CCS'25); Zhang et al. (2026) |
+| Isolation-aware features | fractional-fair-share deviation signal in [`scion_features.py`](src/federated-learning/models/scion_features.py) | Wyss et al. (NDSS'26) |
+| Verifiable coordination | [`signet_notification.py`](src/zero-knowledge/coordination/signet_notification.py): settle the ZK market without a trusted sequencer | Ehsani Moghadam et al. (ICDCS'26) |
+| Loop stability | control-theoretic stability check in [`mtd_game.py`](src/moving-target-defense/game_theory/mtd_game.py) | Scherrer, Perrig & Schmid (Perf. Eval.'26) |
+| Cyber-physical demo | [`frequency_response_demo`](experiments/frequency_response_demo/): the latency budget as a safety property | Zhang et al. (SCION freq. response, 2026) |
+| Formal specs | `StrategicAdversary.thy`, `ControlLoop.thy`, and an adversary-coupled statement in `FedAvg.thy` | Pereira et al. (CCS'25) |
+
+---
+
+## Research Questions
+
+### RQ0: Closing the Detection–Response Loop (the unifying objective)
+- RQ0.1: Can one strategic adversary (zero-shot evasion + work-asymmetry) serve as both the detector's robustness target and the MTD opponent?
+- RQ0.2: What end-to-end correctness statement can be machine-checked for the `observe→learn→decide→reconfigure` loop via refinement?
+- RQ0.3: Is the worst-case loop latency within the budget required for cyber-physical control over SCION?
 
 ### RQ1: Formally Verified Federated Learning for SCION
-- **RQ1.1:** How can federated protocols exploit SCION path-aware properties for DDoD detection?
-- **RQ1.2:** Can we formally verify federated aggregation with Byzantine robustness in Isabelle/HOL?
-- **RQ1.3:** How to verify privacy-preserving implementations in Go using Gobra?
-- **RQ1.4:** What are the performance trade-offs between verification completeness and overhead?
+- RQ1.1: How can federated protocols exploit SCION path-aware properties for DDoD detection?
+- RQ1.2: Can we formally verify federated aggregation with Byzantine robustness in Isabelle/HOL?
+- RQ1.3: How to verify privacy-preserving implementations in Go using Gobra?
+- RQ1.4: What are the performance trade-offs between verification completeness and overhead?
 
 ### RQ2: Zero-Knowledge Privacy for Bandwidth Markets
-- **RQ2.1:** How to integrate ZK-SNARKs with Hummingbird smart contracts?
-- **RQ2.2:** Can we achieve sub-10s proof generation for bandwidth reservations?
-- **RQ2.3:** How to formally verify ZK circuit and smart contract correctness?
-- **RQ2.4:** What are the privacy-utility trade-offs in bandwidth trading?
+- RQ2.1: How to integrate ZK-SNARKs with Hummingbird smart contracts?
+- RQ2.2: Can we achieve sub-10s proof generation for bandwidth reservations?
+- RQ2.3: How to formally verify ZK circuit and smart contract correctness?
+- RQ2.4: What are the privacy-utility trade-offs in bandwidth trading?
 
 ### RQ3: Moving Target Defense with Path-Aware Properties
-- **RQ3.1:** How can SCION multipath routing enable dynamic traffic shifting MTD?
-- **RQ3.2:** Can we create formal game-theoretic models verified in Isabelle/HOL?
-- **RQ3.3:** How to enable federated MTD decision-making across ASes?
-- **RQ3.4:** What are the performance bounds during MTD reconfiguration?
+- RQ3.1: How can SCION multipath routing enable dynamic traffic shifting MTD?
+- RQ3.2: Can we create formal game-theoretic models verified in Isabelle/HOL?
+- RQ3.3: How to enable federated MTD decision-making across ASes?
+- RQ3.4: What are the performance bounds during MTD reconfiguration?
 
 ### RQ4: Federated Digital Twin for SCION Networks
-- **RQ4.1:** How to design a distributed digital twin with formally verified synchronization?
-- **RQ4.2:** What consistency models (eventual, causal, strong) can be proven in Isabelle/HOL?
-- **RQ4.3:** How to enable federated anomaly detection across AS digital twins?
-- **RQ4.4:** What predictive accuracy can we achieve for bandwidth exhaustion and attacks?
+- RQ4.1: How to design a distributed digital twin with formally verified synchronization?
+- RQ4.2: What consistency models (eventual, causal, strong) can be proven in Isabelle/HOL?
+- RQ4.3: How to enable federated anomaly detection across AS digital twins?
+- RQ4.4: What predictive accuracy can we achieve for bandwidth exhaustion and attacks?
 
 ### RQ5: Lightweight SCION-IoT Integration
-- **RQ5.1:** What cryptographic optimizations work for 128-512KB RAM devices?
-- **RQ5.2:** How to implement gateway-mediated bandwidth reservation for IoT?
-- **RQ5.3:** Can we achieve 40% energy efficiency improvements?
-- **RQ5.4:** How to formally verify lightweight protocol security equivalence?
+- RQ5.1: What cryptographic optimizations work for 128-512KB RAM devices?
+- RQ5.2: How to implement gateway-mediated bandwidth reservation for IoT?
+- RQ5.3: Can we achieve 40% energy efficiency improvements?
+- RQ5.4: How to formally verify lightweight protocol security equivalence?
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 ```
 federated-scion-security-framework/
-├── .github/workflows/        # CI/CD automation
-├── docs/                     # Research documentation
-├── src/                      # Source code (5 RQ areas)
-│   ├── formal-verification/  # RQ1.2, RQ1.3 - Isabelle/HOL & Gobra
-│   ├── federated-learning/   # RQ1.1, RQ1.4 - Federated ML protocols
-│   ├── zero-knowledge/       # RQ2 - ZK-SNARKs & smart contracts
-│   ├── moving-target-defense/# RQ3 - Path-aware MTD strategies
-│   ├── digital-twin/         # RQ4 - Federated digital twin
-│   └── iot-scion/           # RQ5 - Lightweight IoT protocols
-├── experiments/              # Testbed setup & simulations
-├── data/                     # Datasets & benchmarks
-├── tools/                    # Automation scripts
-├── tests/                    # Unit & integration tests
-└── publications/             # Research outputs
+├── .github/workflows/        # CI
+├── docs/                     # documentation
+│   ├── CITATIONS.md          # 2026 SCION references this builds on
+│   └── UPGRADE-2026.md       # what changed in the June 2026 revision
+├── src/                      # source (RQ0 spine + 5 RQ areas)
+│   ├── control-loop/         # RQ0   adversary-coupled verified loop (the spine)
+│   ├── formal-verification/  # RQ1.2, RQ1.3  Isabelle/HOL & Gobra
+│   ├── federated-learning/   # RQ1   federated ML + the strategic adversary harness
+│   ├── zero-knowledge/       # RQ2   ZK-SNARKs, smart contracts, Signet-style coordination
+│   ├── moving-target-defense/# RQ3   path-aware MTD + loop stability
+│   ├── digital-twin/         # RQ4   federated digital twin
+│   └── iot-scion/            # RQ5   lightweight IoT protocols
+├── experiments/              # testbed setup & simulations
+│   └── frequency_response_demo/
+├── data/                     # datasets & benchmarks
+├── tools/                    # scripts
+├── tests/                    # tests
+└── publications/             # outputs
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Status and Maturity
 
-### Formal Verification
-- **Isabelle/HOL 2024** - Protocol specification and theorem proving
-- **Gobra** - Go code verification via Viper
-- **Z3 Theorem Prover** - SMT solving
+This is an early-stage research repository that accompanies the proposal. What is
+here today is **specifications, architecture, and runnable demonstrations** — not
+finished research results. Concretely:
 
-### Machine Learning
-- **TensorFlow Federated (TFF)** - Federated learning orchestration
-- **PyTorch 2.0+** - Neural network implementation
-- **scikit-learn** - Baseline ML models
+- The Isabelle/HOL theories state the properties to be proven; the proofs
+  themselves are left as obligations (`sorry`) to be discharged.
+- The Python modules are reference implementations and small simulations; the ML
+  models are defined but not yet trained on real datasets, and no SCIONLab
+  measurements have been collected.
+- The Circom circuits are written but not yet compiled / proven.
 
-### Zero-Knowledge Cryptography
-- **Circom** - ZK-SNARK circuit design language
-- **snarkjs** - Proof generation and verification
-- **BN254 Curve** - Pairing-friendly elliptic curve
-
-### Path-Aware Networking
-- **SCION** - Next-generation Internet architecture
-- **SCIONLab** - Global testbed (20+ ASes, 5 continents)
-- **Docker** - Containerized SCION infrastructure
-
-### Blockchain
-- **Sui Blockchain** - High-performance smart contract platform
-- **Move Language** - Safe smart contract development
+In short: the scaffolding and direction are in place; the proofs, trained models,
+compiled circuits, and testbed evaluation are the doctoral work ahead.
 
 ---
 
-## 🚀 Getting Started
+## Technology Stack
 
-### Prerequisites
+- Formal verification: Isabelle/HOL, Gobra (via Viper), Z3
+- Machine learning: PyTorch, TensorFlow Federated, scikit-learn
+- Zero-knowledge: Circom, snarkjs, Groth16 / BN254
+- Path-aware networking: SCION, SCIONLab, Docker
+- Blockchain: Sui, Move
+
+---
+
+## Getting Started
+
 ```bash
-# System requirements
-- Python 3.8+
-- Git 2.40+
-- Docker & Docker Compose
-- Isabelle/HOL 2024
-
-# Hardware (for experiments)
-- 64GB RAM recommended
-- NVIDIA GPU (for ZK proof generation)
-```
-
-### Installation
-```bash
-# Clone repository
 git clone https://github.com/hmshujaatzaheer/federated-scion-security-framework.git
 cd federated-scion-security-framework
 
-# Set up Python environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Verify installation
-python --version
-git --version
+# run the demos
+python src/federated-learning/adversary/strategic_adversary.py
+python src/control-loop/closed_loop.py
+python experiments/frequency_response_demo/freq_response_demo.py
+
+# run the tests
+python -m pytest tests/ -q
 ```
 
 ---
 
-## 📊 Research Timeline (36 Months)
+## Research Timeline (36 Months)
 
-### Year 1: Foundations (Months 1-12)
-- **Q1:** Literature review, Isabelle/HOL setup, SCIONLab testbed access
-- **Q2:** Formal protocol models, initial federated learning implementation
-- **Q3:** Byzantine-robust aggregation, SCION feature engineering
-- **Q4:** Local cluster deployment, first paper submission (IEEE INFOCOM)
-
-### Year 2: Core Systems (Months 13-24)
-- **Q1:** ZK-SNARK circuit design, Circom implementation
-- **Q2:** Hummingbird smart contract extension, privacy evaluation
-- **Q3:** Federated digital twin architecture, verified synchronization
-- **Q4:** MTD game-theoretic strategies, experimental validation
-
-### Year 3: Integration & Validation (Months 25-36)
-- **Q1:** IoT-SCION protocol optimization, energy-aware scheduling
-- **Q2:** SCIONLab global deployment, comprehensive evaluation
-- **Q3:** Thesis writing, reproducibility artifacts
-- **Q4:** Defense preparation, final revisions
+- Year 1 (Months 1–12): literature integration, Isabelle/HOL foundations,
+  initial federated learning, SCION feature engineering, first paper submission.
+- Year 2 (Months 13–24): ZK-SNARK circuits and Hummingbird extension, federated
+  digital twin with verified synchronization, MTD game-theoretic analysis.
+- Year 3 (Months 25–36): IoT-SCION optimization, SCIONLab evaluation, thesis.
 
 ---
 
-## 📚 Target Publications
+## Target Venues
 
-### Tier-1 Conferences
-1. **Federated Learning Formalization** - ITP/FMCAD Workshop (Year 1)
-2. **SCION DDoD Detection** - IEEE INFOCOM (Year 1)
-3. **Zero-Knowledge Bandwidth Markets** - ACM CCS (Year 2)
-4. **Path-Aware MTD** - USENIX Security (Year 2)
-5. **Lightweight IoT-SCION** - ACM SIGCOMM (Year 3)
-
-### Top Journals
-1. **Federated Digital Twin** - IEEE Transactions on Dependable and Secure Computing (Year 2)
-2. **Comprehensive Framework** - ACM Transactions on Cyber-Physical Systems (Year 3)
+Formal verification (CAV/FM/ITP), networking (INFOCOM/CoNEXT/SIGCOMM/NSDI),
+security (CCS/S&P/USENIX/NDSS), and machine learning (NeurIPS/ICML).
 
 ---
 
-## 🎯 Performance Targets
+## Performance Targets
+
+These are design targets for the research, not measured results.
 
 | Component | Metric | Target | RQ |
 |-----------|--------|--------|-----|
-| Federated DDoD Detection | Accuracy | 99%+ | RQ1.1 |
-| | Detection Latency | <60s | RQ1.1 |
-| | False Positive Rate | <5% | RQ1.1 |
-| ZK Bandwidth Markets | Proof Generation | <10s | RQ2.2 |
-| | Verification Time | <1s | RQ2.2 |
-| | Proof Size | 128-288 bytes | RQ2.2 |
-| Moving Target Defense | Response Improvement | 15-20% | RQ3.4 |
-| | Attack Surface Reduction | Provable | RQ3.2 |
-| Digital Twin | Forecast Horizon | 5-10 min | RQ4.4 |
-| | Sync Lag | <5s | RQ4.2 |
-| IoT-SCION | Energy Reduction | 40% | RQ5.3 |
-| | Crypto Overhead | 60% reduction | RQ5.1 |
+| Closed loop (spine) | Worst-case iteration latency | < cyber-physical budget | RQ0.3 |
+| | Detection retention under zero-shot evasion | high | RQ0.1 |
+| | Work amplification under attack | < 2× | RQ0.1 |
+| Federated DDoD detection | Accuracy | 99%+ | RQ1.1 |
+| | Detection latency | <60s | RQ1.1 |
+| | False positive rate | <5% | RQ1.1 |
+| ZK bandwidth markets | Proof generation | <10s | RQ2.2 |
+| | Verification time | <1s | RQ2.2 |
+| Moving target defense | Response improvement | 15–20% | RQ3.4 |
+| Digital twin | Forecast horizon | 5–10 min | RQ4.4 |
+| IoT-SCION | Energy reduction | 40% | RQ5.3 |
 
 ---
 
-## 🔗 Related Projects
+## Related Work
 
-- [SCION Architecture](https://www.scion-architecture.net/) - Next-generation Internet
-- [Hummingbird](https://github.com/netsys-lab/hummingbird) - Bandwidth Reservations
-- [TensorFlow Federated](https://www.tensorflow.org/federated) - Federated Learning
-- [Circom](https://docs.circom.io/) - ZK-SNARK Circuits
-- [Isabelle/HOL](https://isabelle.in.tum.de/) - Theorem Prover
-
----
-
-## 🤝 Contributing
-
-This is a PhD research project. For collaboration inquiries:
-- **Email:** shujabis@gmail.com
-- **GitHub:** [@hmshujaatzaheer](https://github.com/hmshujaatzaheer)
+- [SCION Architecture](https://www.scion-architecture.net/)
+- [Network Security Group, ETH Zürich — Publications](https://netsec.ethz.ch/publications/) (source of the 2026 references; see `docs/CITATIONS.md`)
+- [Hummingbird](https://github.com/netsys-lab/hummingbird)
+- [TensorFlow Federated](https://www.tensorflow.org/federated)
+- [Circom](https://docs.circom.io/)
+- [Isabelle/HOL](https://isabelle.in.tum.de/)
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **Network Security Group, ETH Zürich** - Research supervision and infrastructure
-- **SCION Community** - Testbed access and technical support
-- **TensorFlow Federated Team** - Federated learning framework
-- **Isabelle/HOL Community** - Formal verification expertise
+MIT — see [LICENSE](LICENSE).
 
 ---
 
-## 📈 Project Status
+## Acknowledgments
 
-**Current Phase:** Literature Review & Setup (Month 1)  
-**Last Updated:** December 2025  
-**Next Milestone:** Isabelle/HOL Formalization (Q1 2026)
+This is independent research. It builds on the publicly published work of the
+Network Security Group at ETH Zürich (SCION, Hummingbird, the formally verified
+router, and the 2026 results listed in `docs/CITATIONS.md`) and on the
+open-source SCION, Isabelle/HOL, and Circom ecosystems. It does not imply any
+affiliation with or endorsement by that group.
 
 ---
 
-**Repository maintained by H M Shujaat Zaheer**  
+Maintained by H M Shujaat Zaheer — contact: shujabis@gmail.com

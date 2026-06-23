@@ -1,7 +1,7 @@
-﻿"""
+"""
 CNN-GRU-DNN Hybrid Model for SCION DDoD Detection
 
-Addresses RQ1.1: SCION-specific DDoD detection using deep learning
+SCION-specific DDoD detection using deep learning.
 
 Architecture:
 - CNN: Extract spatial patterns from packet sequences
@@ -112,7 +112,6 @@ class FederatedDDoDetector:
     Federated DDoD Detector for SCION Networks
     
     Integrates CNN-GRU-DNN model with federated learning
-    Addresses RQ1.1 and RQ1.4
     """
     
     def __init__(self, model_params=None):

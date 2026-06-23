@@ -1,8 +1,7 @@
-﻿"""
+"""
 Federated Averaging (FedAvg) Protocol for SCION DDoD Detection
 
-Implementation of federated learning protocol exploiting SCION path-aware properties.
-Addresses RQ1.1: How can federated protocols exploit SCION path-aware properties?
+Implementation of a federated learning protocol exploiting SCION path-aware properties.
 
 Reference:
     McMahan et al. "Communication-Efficient Learning of Deep Networks 
@@ -110,7 +109,6 @@ class FedAvgServer:
     Federated Averaging Server (can be decentralized via smart contract)
     
     Aggregates model updates from multiple SCION ASes
-    Addresses RQ1.1: Federated DDoD detection across path-aware network
     """
     
     def __init__(self, num_clients: int):
