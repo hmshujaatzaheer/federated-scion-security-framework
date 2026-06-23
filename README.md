@@ -1,5 +1,6 @@
 # Formally Verified Federated Learning Framework for Privacy-Preserving Anomaly Detection in Path-Aware Networks
 
+[![Tests](https://github.com/hmshujaatzaheer/federated-scion-security-framework/actions/workflows/tests.yml/badge.svg)](https://github.com/hmshujaatzaheer/federated-scion-security-framework/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
